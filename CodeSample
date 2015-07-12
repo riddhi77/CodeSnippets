@@ -1,0 +1,60 @@
+<?php include 'session.php';
+include 'connect.php';?>
+<!--/***********************************************************/
+/* Author: Riddhi Mankad
+/* Date: 07/19/2013
+/* Module Name: generateQRCode.php
+/* Version: 1.0
+/***********************************************************/
+/* Description: This file generates QRCode (URL=requested domainname?random=rnd) for the users of Cingo APP
+/* Cingo.Inc Website
+/***********************************************************/
+/* Version                      Comments
+/* 1.0                          First Upload
+/***********************************************************/  -->
+<?php
+//get domain name from the URL
+$URL=$_GET['CN'];
+//generate random number
+$rnd=rand();
+//create session of the user
+$_SESSION['sid']=$rnd;
+//form data for QRCode
+$data=$URL."?random=".$rnd;
+//insert into cingo_requests table
+mysql_query("insert into cingo_request values('$URL',$rnd,NOW(),'Active')") or die ("could not execute");
+echo "Scan the QR Code show below and get access to your account in a second</h2><hr><br>";
+//library for QRCode
+include 'phpqrcode/qrlib.php';
+$PNG_TEMP_DIR = dirname(__FILE__).DIRECTORY_SEPARATOR.'temp'.DIRECTORY_SEPARATOR;
+$PNG_WEB_DIR = 'temp/';
+if (!file_exists($PNG_TEMP_DIR))
+        mkdir($PNG_TEMP_DIR);
+
+$filename = $PNG_TEMP_DIR.'test.png';
+QRcode::png($data,$filename,'H',8,2);
+echo '<center><img src="'.$PNG_WEB_DIR.basename($filename).'" /><br>';
+?>
+<html>
+<body>
+<form action="generateQRCode.php" method="get">
+<input type="hidden" name="CN" value="<?php echo $URL;?>">
+<input type="submit" value="Request new QRCode">
+</form>
+<hr color="blue">
+<br>
+<h1>Upload your certificate-This is similar to Scanning from IPhone</h1>
+<br>
+<hr color="blue">
+<form action="authenticate.php" method="post" enctype="multipart/form-data">
+<input type="hidden" name="random" value="<?php echo $rnd;?>">
+<input type="hidden" name="url" value="<?php echo $URL;?>">
+<input type="hidden" name="plain" value="<?php echo $plain;?>">
+<input type="hidden" name="cipher" value="<?php echo $cipher;?>">
+<p><label for="file">Upload your certifcate</p>
+<input type="file" name="file" id="file">
+<input type="submit" name="submit" value="Send">
+</form>
+<hr>
+</body>
+</html>
